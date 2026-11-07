@@ -11,10 +11,10 @@ A user question enters a fixed order. Internal evidence outranks the open web, a
 
 ```mermaid
 flowchart LR
-    Q["User query"] --> R1["1. Internal<br>organizational context"]
-    R1 --> R2["2. Web search<br>and real-time data"]
-    R2 --> R3["3. Pre-trained<br>parametric knowledge"]
-    R1 --> P["Context-enriched<br>prompt"]
+    Q["User query"] --> R1["1. Internal<br>organizational<br>context"]
+    R1 --> R2["2. Web search and<br>real-time data"]
+    R2 --> R3["3. Pre-trained<br>parametric<br>knowledge"]
+    R1 --> P["Context<br>enriched<br>prompt"]
     R2 --> P
     R3 --> P
     P --> LLM["LLM inference<br>endpoint"]
