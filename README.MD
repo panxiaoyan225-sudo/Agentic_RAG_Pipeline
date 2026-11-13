@@ -20,10 +20,10 @@ flowchart LR
     P --> LLM["LLM inference<br>endpoint"]
 ```
 
-1. **Internal organizational context (primary).** ChromaDB is searched for the nearest document chunks. Those passages ground the model in factual enterprise text, and each passage keeps the source file name and chunk index.
-2. **Web search runs only with approval.** If the retrieved context is missing, incomplete, or the question needs a current fact, the inference endpoint is instructed to use web search only after approval.   
+1. **Internal organizational context - What the organization knows.** ChromaDB is searched for the nearest document chunks. Those passages ground the model in factual enterprise text, and each passage keeps the source file name and chunk index.
+2.  **Live External Knowledge - What the outside world knows now.**  If the retrieved context is missing, incomplete, or the question needs live knowledge, the inference endpoint is instructed to use web search or other extenal sources only after approval.   
 [Web Search: Why "Only with Approval" Is Critical - > ](https://xiaoyanpan.com/Web_Search_Only_With_Approval.html)
-3. **Pre-trained parametric knowledge (last resort).** General reasoning fills gaps that neither the index nor a live search covers.
+3. **Pre-trained parametric knowledge - What the model generally knows.** General reasoning fills gaps that neither the index nor a live search covers.
 
 When retrieved evidence cannot support a conclusion, the run records that. `SimpleRAGAgent.self_correct()` scores lexical overlap between the assembled prompt and the retrieved passages and sets `supported` and `needs_rephrase`. A thin overlap means the agent should stop leaning on the index and either rephrase or move down the cascade, rather than invent a citation.
 
