@@ -1,7 +1,7 @@
-## Full End-to-End RAG Workflow  
+## Full End-to-End Agentic RAG Pipeline  
 **Grounding models in verified enterprise data for high-accuracy execution**
 
-This **Custom RAG pipeline** grounds a general-purpose language model in an organization's own documents. Policies, SOPs, reports, and wikis are chunked, embedded, and stored in a local ChromaDB index. At question time the index is searched first. Only when that evidence is missing or incomplete does the answer fall through to live external knowledge including web search, and only then to the model's pre-trained knowledge.
+This **Custom Agentic RAG pipeline** grounds a general-purpose language model in an organization's own documents. Policies, SOPs, reports, and wikis are chunked, embedded, and stored in a local ChromaDB index. At question time the index is searched first. Only when that evidence is missing or incomplete does the answer fall through to live external knowledge including web search, and only then to the model's pre-trained knowledge.
 
 The script in `RAG_pipeline_local_Model.py` (or `rag_pipeline.py`) executes the **full end-to-end workflow**: ingest, embed, retrieve, assemble a context-enriched prompt, and send it directly to a local **Ollama** inference endpoint (`llama3.1:latest` by default) to generate the final answer. Document text is embedded into the vector index, so model weights are not retrained when files change.      
 
@@ -14,12 +14,11 @@ A user question enters a fixed order. Internal evidence outranks the open web, a
 ```mermaid
 flowchart LR
     Q["User query"] --> R1["1. Internal<br>organizational<br>context"]
-    R1 --> R2["2. Web search and<br>real-time data"]
+    R1 --> R2["2. Live<br>external<br>knowledge"]
     R2 --> R3["3. Pre-trained<br>parametric<br>knowledge"]
-    R1 --> P["Context<br>enriched<br>prompt"]
-    R2 --> P
-    R3 --> P
-    P --> LLM["Local Ollama<br>LLM endpoint<br>(llama3.1:latest)"]
+    R1 -->|Context-enriched prompt| LLM["Local Ollama<br>LLM endpoint<br>(llama3.1:latest)"]
+    R2 -->|Context-enriched prompt| LLM
+    R3 -->|Context-enriched prompt| LLM
 ```
 
 1. **Internal organizational context — What the organization knows.** ChromaDB is searched for the nearest document chunks. Those passages ground the model in factual enterprise text, and each passage keeps the source file name and chunk index.

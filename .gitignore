@@ -1,6 +1,6 @@
 .env
 *copy*
 *Copy*
-langchain_RAG_query_input.py
-langchain_RAG.py
-__pycache__
+__pycache__/*
+*langchain_RAG*
+chroma_db/*
