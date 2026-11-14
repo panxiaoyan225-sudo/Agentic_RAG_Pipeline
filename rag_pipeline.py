@@ -310,7 +310,7 @@ class SimpleRAGAgent:
     def retrieve_tool(self, sub_query: str) -> List[Dict]:
         return retrieve(sub_query, self.config, self.collection)
 
-    def generate(self, query: str, contexts: List[Dict]) -> str:
+    def generate(self, query: str, contexts: List[Dict]) -> str:S
         """ Constructs an unrestrictive, contextual prompt for the LLM.
         Prioritizes retrieved organizational context, but allows fallback to online search and pre-trained parametric knowledge when context is missing or incomplete. """
         # Build context block dynamically
