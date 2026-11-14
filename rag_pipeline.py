@@ -4,6 +4,7 @@ Custom RAG Pipeline — ChromaDB + Custom Python (Open-Source Embedding)
 Supports multiple document formats: HTML, PDF, DOCX, TXT, MD
 Skips code directories automatically (.venv, .git, __pycache__, node_modules, etc.)
 With DuplicateIDError handling for ChromaDB
+NOT Connect to local model like llama3.1, deepseek-r1, qwen, etc. Use RAG_pipeline_local_Model.py instead.
 """
 #Following is a Custom RAG
 #Langchain-RAG example using Ollama in Langchain_RAG.py, for rapid development
