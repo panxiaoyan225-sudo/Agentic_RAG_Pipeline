@@ -1,4 +1,5 @@
-## Grounding models in verified enterprise data for high-accuracy execution
+## Full End-to-End RAG Workflow  
+**Grounding models in verified enterprise data for high-accuracy execution**
 
 This **Custom RAG pipeline** grounds a general-purpose language model in an organization's own documents. Policies, SOPs, reports, and wikis are chunked, embedded, and stored in a local ChromaDB index. At question time the index is searched first. Only when that evidence is missing or incomplete does the answer fall through to live external knowledge including web search, and only then to the model's pre-trained knowledge.
 
