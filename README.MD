@@ -2,7 +2,7 @@
 
 This **Custom RAG pipeline** grounds a general-purpose language model in an organization's own documents. Policies, SOPs, reports, and wikis are chunked, embedded, and stored in a local ChromaDB index. At question time the index is searched first. Only when that evidence is missing or incomplete does the answer fall through to live external knowledge including web search, and only then to the model's pre-trained knowledge.
 
-The script in `RAG_pipeline_local_Model.py` (or `rag_pipeline.py`) executes the full end-to-end workflow: ingest, embed, retrieve, assemble a context-enriched prompt, and send it directly to a local **Ollama** inference endpoint (`llama3.1:latest` by default) to generate the final answer. Document text is embedded into the vector index, so model weights are not retrained when files change.      
+The script in `RAG_pipeline_local_Model.py` (or `rag_pipeline.py`) executes the **full end-to-end workflow**: ingest, embed, retrieve, assemble a context-enriched prompt, and send it directly to a local **Ollama** inference endpoint (`llama3.1:latest` by default) to generate the final answer. Document text is embedded into the vector index, so model weights are not retrained when files change.      
 
 Start with **Langchain-RAG**: If you want rapid development, proof‑of‑concept, or to leverage the broader ecosystem.
 
