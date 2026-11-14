@@ -2,9 +2,9 @@
 
 This **Custom RAG pipeline** grounds a general-purpose language model in an organization's own documents. Policies, SOPs, reports, and wikis are chunked, embedded, and stored in a local ChromaDB index. At question time the index is searched first. Only when that evidence is missing or incomplete does the answer fall through to live external knowledge including web search, and only then to the model's pre-trained knowledge.
 
-The script in `rag_pipeline.py` does the organizational half of that design: ingest, embed, retrieve, and assemble a context-enriched prompt. A separate inference endpoint — Cursor or OpenClaw, running DeepSeek-R1, Qwen, or Llama 3 — receives that prompt and writes the answer. Document text is embedded into the vector index. Model weights are not retrained when the files change.      
+The script in `RAG_pipeline_local_Model.py` (or `rag_pipeline.py`) executes the full end-to-end workflow: ingest, embed, retrieve, assemble a context-enriched prompt, and send it directly to a local **Ollama** inference endpoint (`llama3.1:latest` by default) to generate the final answer. Document text is embedded into the vector index, so model weights are not retrained when files change.      
 
-Start with **Langchain-RAG**: If you want for rapid development, proof‑of‑concept, or leverage the ecosystem.
+Start with **Langchain-RAG**: If you want rapid development, proof‑of‑concept, or to leverage the broader ecosystem.
 
 ## Priority cascade
 
@@ -18,15 +18,15 @@ flowchart LR
     R1 --> P["Context<br>enriched<br>prompt"]
     R2 --> P
     R3 --> P
-    P --> LLM["LLM inference<br>endpoint"]
+    P --> LLM["Local Ollama<br>LLM endpoint<br>(llama3.1:latest)"]
 ```
 
-1. **Internal organizational context - What the organization knows.** ChromaDB is searched for the nearest document chunks. Those passages ground the model in factual enterprise text, and each passage keeps the source file name and chunk index.
-2.  **Live External Knowledge - What the outside world knows now.**  If the retrieved context is missing, incomplete, or the question needs live knowledge, the inference endpoint is instructed to use web search or other extenal sources only after approval.   
-[Web Search: Why "Only with Approval" Is Critical - > ](https://xiaoyanpan.com/Web_Search_Only_With_Approval.html)
-3. **Pre-trained parametric knowledge - What the model generally knows.** General reasoning fills gaps that neither the index nor a live search covers.
+1. **Internal organizational context — What the organization knows.** ChromaDB is searched for the nearest document chunks. Those passages ground the model in factual enterprise text, and each passage keeps the source file name and chunk index.
+2. **Live External Knowledge — What the outside world knows now.** If the retrieved context is missing, incomplete, or the question needs live knowledge, the inference endpoint is instructed to use web search or other external sources only after approval.   
+[Web Search: Why "Only with Approval" Is Critical ->](https://xiaoyanpan.com/Web_Search_Only_With_Approval.html)
+3. **Pre-trained parametric knowledge — What the model generally knows.** General reasoning fills gaps that neither the index nor a live search covers.
 
-When retrieved evidence cannot support a conclusion, the run records that. `SimpleRAGAgent.self_correct()` scores lexical overlap between the assembled prompt and the retrieved passages and sets `supported` and `needs_rephrase`. A thin overlap means the agent should stop leaning on the index and either rephrase or move down the cascade, rather than invent a citation.
+When retrieved evidence cannot support a conclusion, the run records that. `SimpleRAGAgent.self_correct()` scores lexical overlap between the generated answer and the retrieved passages and sets `supported` and `needs_rephrase`. A thin overlap means the agent leaned on fallback knowledge or needs a rephrased query rather than inventing a citation.
 
 ## Two strategies, and the hybrid that uses both
 
@@ -37,7 +37,7 @@ When retrieved evidence cannot support a conclusion, the run records that. `Simp
 | Strengths | Updates by dropping in new files. Access stays on the local index. Every passage names its source. | Deep customization. Low latency once the weights are static. |
 | Limits | The answer is only as good as retrieval. The prompt has a context window. | Can still hallucinate. Training and every retrain are expensive. |
 
-**The enterprise ideal is the hybrid.** Use RAG to pull up-to-date facts from documents. Use light fine-tuning only for tone, structure, and branding. This repository implements the RAG side: documents are chunked and embedded into ChromaDB without a training run. Adapting model weights is a separate job and is not part of `rag_pipeline.py`.
+**The enterprise ideal is the hybrid.** Use RAG to pull up-to-date facts from documents. Use light fine-tuning only for tone, structure, and branding. This repository implements the RAG side: documents are chunked and embedded into ChromaDB without a training run. Adapting model weights is a separate job and is not part of the pipeline script.
 
 ## Why Internal Context Comes First
 
@@ -47,19 +47,19 @@ Organizations keep a local knowledge base because the facts change faster than a
 
 **Grounded answers with a source.** Retrieved passages are attached to the prompt as `[Source: filename]` blocks. The index stores the source file, chunk index, and extension with every vector, so an answer can be traced to the document it came from.
 
-**Local-first knowledge base.** PDFs, HTML, Word files, text, and Markdown land in one on-disk Chroma collection. Privacy follows the whole path: files stay in the reports directory you configure, vectors stay in the index directory you configure, and the prompt is what leaves this process for the inference endpoint. Hosting the index locally does not by itself make the model call private. That depends on where Cursor or OpenClaw sends the prompt.
+**Local-first knowledge base and inference.** PDFs, HTML, Word files, text, and Markdown land in one on-disk Chroma collection. Privacy follows the whole path: files stay in the reports directory you configure, vectors stay in the index directory you configure, and inference runs locally via Ollama (`http://localhost:11434`).
 
 ## How a run works
 
-`python rag_pipeline.py` loads settings from `.env`, then walks five steps.
+Running the script loads settings from `.env`, then walks five steps:
 
 1. **Ingest.** `ingest_documents()` walks `RAG_REPORTS_DIR`, skips excluded directories and extensions, and reads HTML, PDF, DOCX, TXT, and Markdown.
 2. **Chunk.** Each document is split into windows of `RAG_CHUNK_SIZE` characters with `RAG_CHUNK_OVERLAP` characters of overlap. A chunk id is `{stem}_chunk_{index}_{filename}`.
-3. **Embed and store.** `embed_and_store()` loads `all-MiniLM-L6-v2`, encodes chunks in batches of 32, and `add`s them to the persistent Chroma collection. Existing ids are left in place. See below.
+3. **Embed and store.** `embed_and_store()` loads `all-MiniLM-L6-v2`, encodes chunks in batches of 32, and `add`s them to the persistent Chroma collection. Existing ids are left in place.
 4. **Retrieve.** The same embedding model encodes the question. Chroma returns the nearest `RAG_TOP_K` chunks with document text, metadata, and distance.
-5. **Prompt.** `SimpleRAGAgent` deduplicates those chunks and builds the system-and-user prompt: organizational context first, then the question, with explicit instructions for the web-search fallback and the parametric last resort.
+5. **Generate & Evaluate.** `SimpleRAGAgent` deduplicates the chunks, builds the system-and-user prompt following the 3-step priority cascade, sends it to the local Ollama model (`call_ollama()`), and scores answer-to-context overlap via `self_correct()`.
 
-The interactive loop prints the plan, how many chunks came back, the overlap confidence, and the prompt. Type `exit` to stop. The script does not call DeepSeek, Qwen, or Llama itself.
+The interactive loop prints the plan, how many chunks came back, the overlap confidence, and the final **LLM Answer** generated by `llama3.1:latest`. Type `exit` to stop.
 
 ## Ingestion rules
 
@@ -75,7 +75,7 @@ Chunk ids are derived from the file name and the chunk index. Re-running on an u
 
 ## Configuration
 
-Paths and runtime settings live in `.env` next to `rag_pipeline.py`. The Python file reads that file at startup and does not contain machine-specific directories. A variable already set in the process environment is left as-is.
+Paths and runtime settings live in `.env` next to the pipeline script. The Python file reads that file at startup and does not contain machine-specific directories. A variable already set in the process environment is left as-is.
 
 | Variable | Required | Role |
 |---|---|---|
@@ -87,11 +87,13 @@ Paths and runtime settings live in `.env` next to `rag_pipeline.py`. The Python 
 | `RAG_CHUNK_SIZE` | no | Character window, default `500` |
 | `RAG_CHUNK_OVERLAP` | no | Overlap between windows, default `100` |
 | `RAG_TOP_K` | no | Passages retrieved per question, default `5` |
+| `OLLAMA_MODEL` | no | Primary local Ollama model, defaults to `llama3.1:latest` |
+| `OLLAMA_FALLBACK_MODEL` | no | Fallback Ollama model if primary fails/times out, defaults to `llama3.1:latest` |
+| `OLLAMA_URL` | no | Local Ollama API endpoint, defaults to `http://localhost:11434` |
 
 `.env` is listed in `.gitignore`. Keep the filled-in file on this machine.
 
 If a required variable is missing, the process exits before it touches the index.
-
 
 <div align="right">
   <blockquote>
