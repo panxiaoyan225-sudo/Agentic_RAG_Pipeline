@@ -3,3 +3,4 @@
 *Copy*
 langchain_RAG_query_input.py
 langchain_RAG.py
+__pycache__
