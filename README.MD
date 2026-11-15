@@ -8,17 +8,17 @@ The agent has planning, retrieval, and self-correction capabilities — it decid
 
 ```mermaid
 flowchart TD
-    UQ["User Question"] --> AP["Agent Planning<br>Break question into sub-queries"]
+    UQ["User Question"] --> AP["Agent Planning<br>Break into sub-queries"]
     AP --> IK["Internal Knowledge Retrieval<br>ChromaDB"]
-    IK --> DE["Deduplicate & Evaluate<br>Retrieved passages + source metadata"]
+    IK --> DE["Deduplicate & Evaluate<br>Retrieved passages"]
     DE --> Q1{"Is internal evidence<br>sufficient?"}
 
     Q1 -- "Yes" --> AC["Assemble Evidence Context"]
-    Q1 -- "No" --> EK["Live External Knowledge Sources<br>Human Approval Required"]
+    Q1 -- "No" --> EK["Live External Knowledge<br>Human Approval Required"]
 
     EK --> APP{"Approval granted?"}
     APP -- "Yes" --> AER["Approved External Retrieval"]
-    APP -- "No" --> ENA["External retrieval not authorised"]
+    APP -- "No" --> ENA["External retrieval not authorized"]
 
     AER --> DEE["Deduplicate & Evaluate<br>External evidence"]
     DEE --> Q2{"Is available evidence<br>sufficient?"}
@@ -28,7 +28,7 @@ flowchart TD
     ENA --> PK
     PK --> AC
 
-    AC --> OI["Local Ollama Inference<br>Generate answer"]
+    AC --> OI["Local Ollama Inference<br>llama3.1:latest"]
     OI --> SC["Self-Correction<br>Evaluate answer-to-source overlap"]
     SC --> Q3{"Grounding adequate?"}
 
@@ -38,7 +38,6 @@ flowchart TD
     Q4 -- "Yes" --> RQ["Refine Sub-queries<br>Retrieve and evaluate again"]
     RQ --> DE
     Q4 -- "No" --> ST["Stop & Ask Human<br>Evidence insufficient"]
-    P --> LLM["Local Ollama<br>LLM endpoint<br>(llama3.1:latest)"]
 ```
 
 Document text is embedded into the vector index, so model weights are not retrained when files change.Start with **Langchain-RAG**, If you want rapid development, proof‑of‑concept, or to leverage the broader ecosystem.
