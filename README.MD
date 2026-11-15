@@ -14,11 +14,13 @@ A user question enters a fixed order. Internal evidence outranks the open web, a
 ```mermaid
 flowchart LR
     Q["User query"] --> R1["1. Internal<br>organizational<br>context"]
-    R1 --> R2["2. Live<br>external<br>knowledge"]
+    R1 --> R2["2. Web search and<br>real-time data"]
     R2 --> R3["3. Pre-trained<br>parametric<br>knowledge"]
-    R1 -->|Context-enriched prompt| LLM["Local Ollama<br>LLM endpoint<br>(llama3.1:latest)"]
-    R2 -->|Context-enriched prompt| LLM
-    R3 -->|Context-enriched prompt| LLM
+    R1 --> Conv
+    R2 --> Conv
+    R3 --> Conv(( ))
+    style Conv height:0px,width:0px;
+    Conv -->|Context-enriched prompt| LLM["Local Ollama<br>LLM endpoint<br>(llama3.1:latest)"]
 ```
 
 1. **Internal organizational context — What the organization knows.** ChromaDB is searched for the nearest document chunks. Those passages ground the model in factual enterprise text, and each passage keeps the source file name and chunk index.
