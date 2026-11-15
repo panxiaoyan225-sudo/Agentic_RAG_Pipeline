@@ -1,6 +1,5 @@
 .env
-*copy*
-*Copy*
-__pycache__/*
+__pycache__/
 *langchain_RAG*
-chroma_db/*
+chroma_db/
+*copy*

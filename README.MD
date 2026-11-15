@@ -30,36 +30,42 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    UQ["User Question"] --> AP["Agent Planning<br>Break into sub-queries"]
-    AP --> IK["Internal Knowledge Retrieval<br>ChromaDB"]
-    IK --> DE["Deduplicate & Evaluate<br>Retrieved passages"]
-    DE --> Q1{"Is internal evidence<br>sufficient?"}
+    A["User Question"] --> B["Agent Planning<br/>Break question into sub-queries"]
+    B --> C["Internal Knowledge Retrieval<br/>ChromaDB"]
+    C --> D["Deduplicate & Evaluate<br/>Retrieved passages + source metadata"]
 
-    Q1 -- "Yes" --> AC["Assemble Evidence Context"]
-    Q1 -- "No" --> EK["Live External Knowledge<br>Human Approval Required"]
+    D --> E{"Is internal evidence<br/>sufficient?"}
 
-    EK --> APP{"Approval granted?"}
-    APP -- "Yes" --> AER["Approved External Retrieval"]
-    APP -- "No" --> ENA["External retrieval not authorized"]
+    E -->|Yes| H["Assemble Evidence Context"]
+    E -->|No| F["Live External Knowledge Sources<br/>Human Approval Required"]
 
-    AER --> DEE["Deduplicate & Evaluate<br>External evidence"]
-    DEE --> Q2{"Is available evidence<br>sufficient?"}
+    F --> G{"Approval granted?"}
+    G -->|Yes| I["Approved External Retrieval"]
+    G -->|No| J["External retrieval not authorized"]
 
-    Q2 -- "Yes" --> AC
-    Q2 -- "No" --> PK["Parametric Knowledge<br>Model's general knowledge"]
-    ENA --> PK
-    PK --> AC
+    I --> K["Deduplicate & Evaluate<br/>External evidence"]
+    K --> L{"Is available evidence<br/>sufficient?"}
 
-    AC --> OI["Local Ollama Inference<br>llama3.1:latest"]
-    OI --> SC["Self-Correction<br>Evaluate answer-to-source overlap"]
-    SC --> Q3{"Grounding adequate?"}
+    J --> M["Parametric Knowledge<br/>Model's general knowledge"]
+    L -->|Yes| H
+    L -->|No| M
 
-    Q3 -- "Yes" --> RA["Return Answer<br>with source context"]
-    Q3 -- "No" --> Q4{"Can retrieval be<br>refined or continued?"}
+    M --> H
+    H --> N["Local Ollama Inference<br/>Generate answer"]
+    N --> O["Self-Correction<br/>Evaluate answer-to-source overlap"]
+    O --> P{"Grounding adequate?"}
 
-    Q4 -- "Yes" --> RQ["Refine Sub-queries<br>Retrieve and evaluate again"]
-    RQ --> DE
-    Q4 -- "No" --> ST["Stop & Ask Human<br>Evidence insufficient"]
+    P -->|Yes| Q["Return Answer<br/>with source context"]
+    P -->|No| R{"Can retrieval be<br/>refined or continued?"}
+
+    R -->|Yes| S["Refine Sub-queries<br/>Retrieve and evaluate again"]
+    S --> C
+    R -->|No| T["Stop & Ask Human<br/>Evidence insufficient"]
+
+    style A fill:#e8eef8,stroke:#5276a8,color:#172b4d
+    style Q fill:#e6f3eb,stroke:#4c8b63,color:#17452b
+    style T fill:#fff0e5,stroke:#c47a3b,color:#653512
+    style H fill:#e8eef8,stroke:#5276a8,color:#172b4d
 ```
 
 When retrieved evidence cannot support a conclusion, the run records that. `SimpleRAGAgent.self_correct()` scores lexical overlap between the generated answer and the retrieved passages and sets `supported` and `needs_rephrase`. A thin overlap means the agent leaned on fallback knowledge or needs a rephrased query rather than inventing a citation.
