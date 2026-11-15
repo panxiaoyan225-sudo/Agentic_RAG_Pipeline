@@ -30,42 +30,43 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    A["User Question"] --> B["Agent Planning"]
-    B --> C["ChromaDB Retrieval"]
-    C --> D["Evaluate Passages"]
+    A["User Question"] --> B["Agent Planning<br/>Break question into sub-queries"]
+    B --> C["Internal Knowledge Retrieval<br/>ChromaDB"]
+    C --> D["Deduplicate & Evaluate<br/>Retrieved passages + source metadata"]
 
-    D --> E{"Sufficient?"}
+    D --> E{"Is internal evidence<br/>sufficient?"}
 
-    E -->|Yes| H["Assemble Context"]
-    E -->|No| F["Live External Sources<br>(Approval Required)"]
+    E -->|Yes| H["Assemble Evidence<br/>& Knowledge "]
+    E -->|No| F["Live External Knowledge Sources<br/>Human Approval Required"]
 
-    F --> G{"Approval Granted?"}
-    G -->|Yes| I["External Retrieval"]
-    G -->|No| J["Not Authorized"]
+    F --> G{"Approval granted?"}
+    G -->|Yes| I["Approved External Retrieval"]
+    G -->|No| J["External retrieval not authorized"]
 
-    I --> K["Evaluate External"]
-    K --> L{"Sufficient?"}
+    I --> K["Deduplicate & Evaluate<br/>External evidence"]
+    K --> L{"Is available evidence<br/>sufficient?"}
 
-    J --> M["Parametric Knowledge"]
+    J --> M["Parametric Knowledge<br/>Model's general knowledge"]
     L -->|Yes| H
     L -->|No| M
 
     M --> H
-    H --> N["Local Ollama Inference"]
-    N --> O["Self-Correction"]
-    O --> P{"Grounded?"}
+    H --> N["Local Ollama Inference<br/>Generate answer"]
+    N --> O["Self-Correction<br/>Evaluate answer-to-source overlap"]
+    O --> P{"Grounding adequate?"}
 
-    P -->|Yes| Q["Return Answer"]
-    P -->|No| R{"Refine Query?"}
+    P -->|Yes| Q["Return Answer<br/>with source context"]
+    P -->|No| R{"Can retrieval be<br/>refined or continued?"}
 
-    R -->|Yes| S["Retry Retrieval"]
+    R -->|Yes| S["Refine Sub-queries<br/>Retrieve and evaluate again"]
     S --> C
-    R -->|No| T["Stop & Escalate"]
+    R -->|No| T["Stop & Escalate<br/>Evidence insufficient"]
 
     style A fill:#e8eef8,stroke:#5276a8,color:#172b4d
     style Q fill:#e6f3eb,stroke:#4c8b63,color:#17452b
     style T fill:#fff0e5,stroke:#c47a3b,color:#653512
     style H fill:#e8eef8,stroke:#5276a8,color:#172b4d
+```
 ```
 
 When retrieved evidence cannot support a conclusion, the run records that. `SimpleRAGAgent.self_correct()` scores lexical overlap between the generated answer and the retrieved passages and sets `supported` and `needs_rephrase`. A thin overlap means the agent leaned on fallback knowledge or needs a rephrased query rather than inventing a citation.
