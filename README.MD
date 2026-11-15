@@ -29,38 +29,38 @@ flowchart LR
  What the agent is authorized to do, what evidence it can rely on, and when it must stop.
 
 ```mermaid
-flowchart TD
-    A["User Question"] --> B["Agent Planning<br/>Break question into sub-queries"]
-    B --> C["Internal Knowledge Retrieval<br/>ChromaDB"]
-    C --> D["Deduplicate & Evaluate<br/>Retrieved passages + source metadata"]
+flowchart LR
+    A["User Question"] --> B["Agent Planning"]
+    B --> C["ChromaDB Retrieval"]
+    C --> D["Evaluate Passages"]
 
-    D --> E{"Is internal evidence<br/>sufficient?"}
+    D --> E{"Sufficient?"}
 
-    E -->|Yes| H["Assemble Evidence<br/>& Knowledge "]
-    E -->|No| F["Live External Knowledge Sources<br/>Human Approval Required"]
+    E -->|Yes| H["Assemble Context"]
+    E -->|No| F["External Sources<br/>(Approval Needed)"]
 
-    F --> G{"Approval granted?"}
-    G -->|Yes| I["Approved External Retrieval"]
-    G -->|No| J["External retrieval not authorized"]
+    F --> G{"Approved?"}
+    G -->|Yes| I["External Retrieval"]
+    G -->|No| J["Not Authorized"]
 
-    I --> K["Deduplicate & Evaluate<br/>External evidence"]
-    K --> L{"Is available evidence<br/>sufficient?"}
+    I --> K["Evaluate External"]
+    K --> L{"Sufficient?"}
 
-    J --> M["Parametric Knowledge<br/>Model's general knowledge"]
+    J --> M["Parametric Knowledge"]
     L -->|Yes| H
     L -->|No| M
 
     M --> H
-    H --> N["Local Ollama Inference<br/>Generate answer"]
-    N --> O["Self-Correction<br/>Evaluate answer-to-source overlap"]
-    O --> P{"Grounding adequate?"}
+    H --> N["Ollama Inference"]
+    N --> O["Self-Correction"]
+    O --> P{"Grounded?"}
 
-    P -->|Yes| Q["Return Answer<br/>with source context"]
-    P -->|No| R{"Can retrieval be<br/>refined or continued?"}
+    P -->|Yes| Q["Return Answer"]
+    P -->|No| R{"Refine?"}
 
-    R -->|Yes| S["Refine Sub-queries<br/>Retrieve and evaluate again"]
+    R -->|Yes| S["Retry Query"]
     S --> C
-    R -->|No| T["Stop & Escalate<br/>Evidence insufficient"]
+    R -->|No| T["Stop & Escalate"]
 
     style A fill:#e8eef8,stroke:#5276a8,color:#172b4d
     style Q fill:#e6f3eb,stroke:#4c8b63,color:#17452b
