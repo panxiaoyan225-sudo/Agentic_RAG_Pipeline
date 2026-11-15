@@ -1,6 +1,8 @@
 ## Full End-to-End Agentic RAG Pipeline  
 
-My pipeline is an **end-to-end Agentic RAG system**.The `RAG_pipeline_local_Model.py` executes the **full end-to-end workflow**: ingest, embed, retrieve, assemble a context-enriched prompt, and send it directly to a local **Ollama** inference endpoint (`llama3.1:latest` by default) to generate the final answer.Start with **Langchain-RAG**, If you want rapid development, proof‑of‑concept, or to leverage the broader ecosystem.    
+My pipeline is an **end-to-end Agentic RAG system**.The `RAG_pipeline_local_Model.py` executes the **full end-to-end workflow**: ingest, embed, retrieve, assemble a context-enriched prompt, and send it directly to a local **Ollama** inference endpoint (`llama3.1:latest` by default) to generate the final answer.  
+Start with **Langchain-RAG**, If you want rapid development, proof‑of‑concept, or to leverage the broader ecosystem. 
+
 The agent has planning, retrieval, and self-correction capabilities — it decides how to query, deduplicates results, and scores whether the answer is grounded in the retrieved evidence. It implements a **priority cascade**: internal organizational context first, then live external knowledge with approval, then parametric fallback. It's not a single-shot retrieve-and-generate — the agent iterates over sub-queries and validates the answer against the source.  
 
 ## Priority cascade
@@ -17,8 +19,13 @@ flowchart LR
     R3 --> P
     P --> LLM["Local Ollama<br>LLM endpoint<br>(llama3.1:latest)"]
 ```
+1. **Internal organizational context — What the organization knows.** ChromaDB is searched for the nearest document chunks. Those passages ground the model in factual enterprise text, and each passage keeps the source file name and chunk index.
+2. **Live External Knowledge — What the outside world knows now.** If the retrieved context is missing, incomplete, or the question needs live knowledge, the inference endpoint is instructed to use web search or other external sources only after approval.   
+[Web Search: Why "Only with Approval" Is Critical ->](https://xiaoyanpan.com/Web_Search_Only_With_Approval.html)
+3. **Pre-trained parametric knowledge — What the model generally knows.** General reasoning fills gaps that neither the index nor a live search covers.
 
- ## How the Agent Is Instructed & Governed  
+
+ ## How the agent is Instructed & Governed  
  What the agent is authorized to do, what evidence it can rely on, and when it must stop.
 
 ```mermaid
@@ -54,11 +61,6 @@ flowchart TD
     RQ --> DE
     Q4 -- "No" --> ST["Stop & Ask Human<br>Evidence insufficient"]
 ```
-
-1. **Internal organizational context — What the organization knows.** ChromaDB is searched for the nearest document chunks. Those passages ground the model in factual enterprise text, and each passage keeps the source file name and chunk index.
-2. **Live External Knowledge — What the outside world knows now.** If the retrieved context is missing, incomplete, or the question needs live knowledge, the inference endpoint is instructed to use web search or other external sources only after approval.   
-[Web Search: Why "Only with Approval" Is Critical ->](https://xiaoyanpan.com/Web_Search_Only_With_Approval.html)
-3. **Pre-trained parametric knowledge — What the model generally knows.** General reasoning fills gaps that neither the index nor a live search covers.
 
 When retrieved evidence cannot support a conclusion, the run records that. `SimpleRAGAgent.self_correct()` scores lexical overlap between the generated answer and the retrieved passages and sets `supported` and `needs_rephrase`. A thin overlap means the agent leaned on fallback knowledge or needs a rephrased query rather than inventing a citation.
 
