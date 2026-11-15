@@ -29,12 +29,13 @@ flowchart LR
  What the agent is authorized to do, what evidence it can rely on, and when it must stop.
 
 ```mermaid
-flowchart LR
+flowchart TD
     A["User Question"] --> B["Agent Planning"]
-    B --> C["Internal Knowledge Retrieval"]
+    B --> C["ChromaDB Retrieval"]
     C --> D["Evaluate Passages"]
 
     D --> E{"Sufficient?"}
+
     E -->|Yes| H["Assemble Context"]
     E -->|No| F["Live External Sources<br>(Approval Required)"]
 
@@ -44,12 +45,12 @@ flowchart LR
 
     I --> K["Evaluate External"]
     K --> L{"Sufficient?"}
-    
+
     J --> M["Parametric Knowledge"]
     L -->|Yes| H
     L -->|No| M
-    M --> H
 
+    M --> H
     H --> N["Local Ollama Inference"]
     N --> O["Self-Correction"]
     O --> P{"Grounded?"}
