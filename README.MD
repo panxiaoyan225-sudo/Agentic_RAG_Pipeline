@@ -1,7 +1,22 @@
 ## Full End-to-End Agentic RAG Pipeline  
 
-My pipeline is an **end-to-end Agentic RAG system**.The `RAG_pipeline_local_Model.py` executes the **full end-to-end workflow**: ingest, embed, retrieve, assemble a context-enriched prompt, and send it directly to a local **Ollama** inference endpoint (`llama3.1:latest` by default) to generate the final answer.  
+My pipeline is an **end-to-end Agentic RAG system**.The `RAG_pipeline_local_Model.py` executes the **full end-to-end workflow**: ingest, embed, retrieve, assemble a context-enriched prompt, and send it directly to a local **Ollama** inference endpoint (`llama3.1:latest` by default) to generate the final answer.Start with **Langchain-RAG**, If you want rapid development, proof‑of‑concept, or to leverage the broader ecosystem.    
 The agent has planning, retrieval, and self-correction capabilities — it decides how to query, deduplicates results, and scores whether the answer is grounded in the retrieved evidence. It implements a **priority cascade**: internal organizational context first, then live external knowledge with approval, then parametric fallback. It's not a single-shot retrieve-and-generate — the agent iterates over sub-queries and validates the answer against the source.  
+
+## Priority cascade
+
+A user question enters a fixed order. Internal evidence outranks the open web, and the open web outranks parametric memory.
+
+```mermaid
+flowchart LR
+    Q["User query"] --> R1["1. Internal<br>organizational<br>context"]
+    R1 --> R2["2. Live external<br>knowledge"]
+    R2 --> R3["3. Pre-trained<br>parametric<br>knowledge"]
+    R1 --> P["Context<br>enriched<br>prompt"]
+    R2 --> P
+    R3 --> P
+    P --> LLM["Local Ollama<br>LLM endpoint<br>(llama3.1:latest)"]
+```
 
  ## How the Agent Is Instructed & Governed  
  What the agent is authorized to do, what evidence it can rely on, and when it must stop.
@@ -38,23 +53,6 @@ flowchart TD
     Q4 -- "Yes" --> RQ["Refine Sub-queries<br>Retrieve and evaluate again"]
     RQ --> DE
     Q4 -- "No" --> ST["Stop & Ask Human<br>Evidence insufficient"]
-```
-
-Document text is embedded into the vector index, so model weights are not retrained when files change.Start with **Langchain-RAG**, If you want rapid development, proof‑of‑concept, or to leverage the broader ecosystem.
-
-## Priority cascade
-
-A user question enters a fixed order. Internal evidence outranks the open web, and the open web outranks parametric memory.
-
-```mermaid
-flowchart LR
-    Q["User query"] --> R1["1. Internal<br>organizational<br>context"]
-    R1 --> R2["2. Live external<br>knowledge"]
-    R2 --> R3["3. Pre-trained<br>parametric<br>knowledge"]
-    R1 --> P["Context<br>enriched<br>prompt"]
-    R2 --> P
-    R3 --> P
-    P --> LLM["Local Ollama<br>LLM endpoint<br>(llama3.1:latest)"]
 ```
 
 1. **Internal organizational context — What the organization knows.** ChromaDB is searched for the nearest document chunks. Those passages ground the model in factual enterprise text, and each passage keeps the source file name and chunk index.
