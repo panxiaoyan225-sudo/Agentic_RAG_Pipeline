@@ -36,7 +36,7 @@ flowchart TD
 
     D --> E{"Is internal evidence<br/>sufficient?"}
 
-    E -->|Yes| H["Assemble Evidence Context"]
+    E -->|Yes| H["Assemble Evidence<br/>& Knowledge "]
     E -->|No| F["Live External Knowledge Sources<br/>Human Approval Required"]
 
     F --> G{"Approval granted?"}
@@ -60,7 +60,7 @@ flowchart TD
 
     R -->|Yes| S["Refine Sub-queries<br/>Retrieve and evaluate again"]
     S --> C
-    R -->|No| T["Stop & Ask Human<br/>Evidence insufficient"]
+    R -->|No| T["Stop & Escalate<br/>Evidence insufficient"]
 
     style A fill:#e8eef8,stroke:#5276a8,color:#172b4d
     style Q fill:#e6f3eb,stroke:#4c8b63,color:#17452b
