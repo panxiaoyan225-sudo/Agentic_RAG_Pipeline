@@ -28,7 +28,6 @@ flowchart LR
  ## How the agent is Instructed & Governed  
  What the agent is authorized to do, what evidence it can rely on, and when it must stop.
 
-```mermaid
 <div align="center">
   <div style="width: 65%;">
 
