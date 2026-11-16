@@ -29,24 +29,21 @@ flowchart LR
  What the agent is authorized to do, what evidence it can rely on, and when it must stop.
 
 <div align="center">
-  <div style="width: 65%;">
+  <div style="transform: scale(0.55); transform-origin: top center; max-height: 450px; overflow: hidden;">
 
 ```mermaid
 flowchart TD
-    %% Define Styles
     classDef anchor fill:#EDF2F7,stroke:#64748B,stroke-width:1.4px,color:#0F172A;
     classDef process fill:#E8F4FD,stroke:#BAE6FD,stroke-width:1.2px,color:#0C4A6E;
     classDef decision fill:#F5FAFF,stroke:#93C5FD,stroke-width:1.2px,stroke-dasharray: 4 3,color:#0C4A6E;
     classDef success fill:#E6F4EA,stroke:#4D8B6F,stroke-width:1.35px,color:#14532D;
     classDef warning fill:#FDF3E7,stroke:#C98A5B,stroke-width:1.35px,color:#7C2D12;
 
-    %% Column 1: Entry & Internal Retrieval
     A["User Question"] --> B["Agent Planning"]
     B --> C["Internal Knowledge Retrieval"]
     C --> D["Evaluate Passages"]
     D --> E{"Sufficient?"}
 
-    %% Column 2: Internal Sufficiency & Human Approval
     E -- "Yes" --> H["Assemble Context"]
     E -- "No" --> F["Live External Sources<br/>(Approval Required)"]
     F --> G{"Approval Granted?"}
@@ -54,28 +51,23 @@ flowchart TD
     G -- "No" --> J["Not Authorized"]
     J --> M["Parametric Knowledge"]
 
-    %% Column 3: External Retrieval & Parametric Fallback
     I --> K["Evaluate External"]
     K --> L{"Sufficient?"}
     L -- "Yes" --> H
     L -- "No" --> M
     M --> H
 
-    %% Column 4: Context Assembly, Local Inference & Self-Correction
     H --> N["Local Ollama Inference"]
     N --> O["Self-Correction"]
     O --> P{"Grounded?"}
 
-    %% Column 5: Governed Outcomes & Retry Loop
     P -- "Yes" --> Q["Return Answer"]
     P -- "No" --> R{"Refine Query?"}
     R -- "Yes" --> S["Retry Retrieval"]
     R -- "No" --> T["Stop & Escalate"]
     
-    %% Retry Loop Back
     S --> C
 
-    %% Apply Classes
     class A anchor;
     class B,C,D,F,I,K,J,M,N,O,S process;
     class E,G,L,P,R decision;
