@@ -33,47 +33,44 @@ flowchart LR
 </p>
 
 ```mermaid
-%%{init: {
-  'theme': 'base',
-  'themeVariables': { 'fontSize': '11px', 'fontFamily': 'Inter, sans-serif' },
-  'flowchart': { 'nodeSpacing': 18, 'rankSpacing': 22, 'diagramPadding': 6, 'htmlLabels': true }
-}}%%
 flowchart TD
-  A["User Query"] --> B["Agent Planning"]
-  B --> C["Internal Knowledge Retrieval"]
-  C --> D["Evaluate Passages"]
-  D --> E{"Sufficient?"}
-  E -- "Yes" --> H["Assemble Context"]
-  E -- "No" --> F["Live External Sources<br/>(Approval Required)"]
-  F --> G{"Approval Granted?"}
-  G -- "Yes" --> I["External Retrieval"]
-  G -- "No" --> J["Not Authorized"]
-  J --> M["Parametric Knowledge"]
-  I --> K["Evaluate External"]
-  K --> L{"Sufficient?"}
-  L -- "Yes" --> H
-  L -- "No" --> M
-  M --> H
-  H --> N["Local Ollama Inference"]
-  N --> O["Self-Correction"]
-  O --> P{"Grounded?"}
-  P -- "Yes" --> Q["Return Answer"]
-  P -- "No" --> R{"Refine Query?"}
-  R -- "Yes" --> S["Retry Retrieval"]
-  R -- "No" --> T["Stop & Escalate"]
-  S --> C
+    A["User Question"] --> B["Agent Planning"]
+    B --> C["ChromaDB Retrieval"]
+    C --> D["Evaluate Passages"]
 
-  class A,H anchor;
-  class B,C,D,F,I,K,J,M,N,O,S process;
-  class E,G,L,P,R decision;
-  class Q success;
-  class T warning;
+    D --> E{"Sufficient?"}
 
-  classDef anchor fill:#EDF2F7,stroke:#64748B,stroke-width:1.4px,color:#0F172A;
-  classDef process fill:#E8F4FD,stroke:#BAE6FD,stroke-width:1.2px,color:#0C4A6E;
-  classDef decision fill:#F5FAFF,stroke:#93C5FD,stroke-width:1.2px,stroke-dasharray:4 3,color:#0C4A6E;
-  classDef success fill:#E6F4EA,stroke:#4D8B6F,stroke-width:1.35px,color:#14532D;
-  classDef warning fill:#FDF3E7,stroke:#C98A5B,stroke-width:1.35px,color:#7C2D12;
+    E -->|Yes| H["Assemble Context"]
+    E -->|No| F["Live External Sources<br>(Approval Required)"]
+
+    F --> G{"Approval Granted?"}
+    G -->|Yes| I["External Retrieval"]
+    G -->|No| J["Not Authorized"]
+
+    I --> K["Evaluate External"]
+    K --> L{"Sufficient?"}
+
+    J --> M["Parametric Knowledge"]
+    L -->|Yes| H
+    L -->|No| M
+
+    M --> H
+    H --> N["Local Ollama Inference"]
+    N --> O["Self-Correction"]
+    O --> P{"Grounded?"}
+
+    P -->|Yes| Q["Return Answer"]
+    P -->|No| R{"Refine Query?"}
+
+    R -->|Yes| S["Retry Retrieval"]
+    S --> C
+    R -->|No| T["Stop & Escalate"]
+
+    style A fill:#e8eef8,stroke:#5276a8,color:#172b4d
+    style Q fill:#e6f3eb,stroke:#4c8b63,color:#17452b
+    style T fill:#fff0e5,stroke:#c47a3b,color:#653512
+    style H fill:#e8eef8,stroke:#5276a8,color:#172b4d
+```
 
 When retrieved evidence cannot support a conclusion, the run records that. `SimpleRAGAgent.self_correct()` scores lexical overlap between the generated answer and the retrieved passages and sets `supported` and `needs_rephrase`. A thin overlap means the agent leaned on fallback knowledge or needs a rephrased query rather than inventing a citation.
 
