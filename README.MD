@@ -28,13 +28,12 @@ flowchart LR
  ## How the agent is Instructed & Governed  
  What the agent is authorized to do, what evidence it can rely on, and when it must stop.
 
+
+
 <p align="center">
   <img src="./docs/diagram.svg" alt="Agent flow" width="50%">
 </p>
 
-<p align="center">
-  <img src="./docs/diagram-lr.svg" alt="Agent flow" width="100%">
-</p>
 
 
 When retrieved evidence cannot support a conclusion, the run records that. `SimpleRAGAgent.self_correct()` scores lexical overlap between the generated answer and the retrieved passages and sets `supported` and `needs_rephrase`. A thin overlap means the agent leaned on fallback knowledge or needs a rephrased query rather than inventing a citation.
