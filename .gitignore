@@ -3,3 +3,4 @@ __pycache__/
 *langchain_RAG*
 chroma_db/
 *copy*
+RAG_pipeline_local_Model_explnation.py
