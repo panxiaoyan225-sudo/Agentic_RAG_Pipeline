@@ -31,7 +31,7 @@ flowchart LR
 
 
 <p align="center">
-  <img src="./docs/diagram.svg" alt="Agent flow" width="50%">
+  <img src="./docs/diagram.svg" alt="Agent flow" width="30%">
 </p>
 
 
