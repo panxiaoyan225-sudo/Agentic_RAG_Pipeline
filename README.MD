@@ -32,45 +32,10 @@ flowchart LR
   <img src="./docs/diagram.svg" alt="Agent flow" width="50%">
 </p>
 
-```mermaid
-flowchart TD
-    A["User Question"] --> B["Agent Planning"]
-    B --> C["ChromaDB Retrieval"]
-    C --> D["Evaluate Passages"]
+<p align="center">
+  <img src="./docs/diagram-lr.svg" alt="Agent flow" width="100%">
+</p>
 
-    D --> E{"Sufficient?"}
-
-    E -->|Yes| H["Assemble Context"]
-    E -->|No| F["Live External Sources<br>(Approval Required)"]
-
-    F --> G{"Approval Granted?"}
-    G -->|Yes| I["External Retrieval"]
-    G -->|No| J["Not Authorized"]
-
-    I --> K["Evaluate External"]
-    K --> L{"Sufficient?"}
-
-    J --> M["Parametric Knowledge"]
-    L -->|Yes| H
-    L -->|No| M
-
-    M --> H
-    H --> N["Local Ollama Inference"]
-    N --> O["Self-Correction"]
-    O --> P{"Grounded?"}
-
-    P -->|Yes| Q["Return Answer"]
-    P -->|No| R{"Refine Query?"}
-
-    R -->|Yes| S["Retry Retrieval"]
-    S --> C
-    R -->|No| T["Stop & Escalate"]
-
-    style A fill:#e8eef8,stroke:#5276a8,color:#172b4d
-    style Q fill:#e6f3eb,stroke:#4c8b63,color:#17452b
-    style T fill:#fff0e5,stroke:#c47a3b,color:#653512
-    style H fill:#e8eef8,stroke:#5276a8,color:#172b4d
-```
 
 When retrieved evidence cannot support a conclusion, the run records that. `SimpleRAGAgent.self_correct()` scores lexical overlap between the generated answer and the retrieved passages and sets `supported` and `needs_rephrase`. A thin overlap means the agent leaned on fallback knowledge or needs a rephrased query rather than inventing a citation.
 
