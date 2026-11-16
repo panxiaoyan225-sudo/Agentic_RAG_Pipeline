@@ -29,7 +29,11 @@ flowchart LR
  What the agent is authorized to do, what evidence it can rely on, and when it must stop.
 
 ```mermaid
-flowchart LR
+<div align="center">
+  <div style="width: 65%;">
+
+```mermaid
+flowchart TD
     %% Define Styles
     classDef anchor fill:#EDF2F7,stroke:#64748B,stroke-width:1.4px,color:#0F172A;
     classDef process fill:#E8F4FD,stroke:#BAE6FD,stroke-width:1.2px,color:#0C4A6E;
