@@ -3,7 +3,7 @@
 My pipeline is an **end-to-end Agentic RAG system**.This is a simpler version built to demonstrate the work. The `RAG_pipeline_local_Model.py` executes the **full end-to-end workflow**: ingest, embed, retrieve, assemble a context-enriched prompt, and send it directly to a local **Ollama** inference endpoint (`llama3.1:latest` by default) to generate the final answer.    
  My deployed version uses **separate index and retrieval stages** with **incremental ingestion**. Start with **Langchain-RAG**, If you want rapid development, proof‑of‑concept, or to leverage the broader ecosystem. 
 
-The agent has planning, retrieval, and self-correction capabilities — it decides how to query, deduplicates results, and scores whether the answer is grounded in the retrieved evidence. It implements a **priority cascade**: internal organizational context first, then live external knowledge with approval, then parametric fallback. It's not a single-shot retrieve-and-generate — the agent iterates over sub-queries and validates the answer against the source.  
+The agent has **planning, retrieval, and self-correction capabilities** — it decides how to query, deduplicates results, and scores whether the answer is grounded in the retrieved evidence. It implements a **priority cascade**: internal organizational context first, then live external knowledge with approval, then parametric fallback. It's not a single-shot retrieve-and-generate — the agent iterates over sub-queries and validates the answer against the source.  
 
 ## Priority cascade
 
