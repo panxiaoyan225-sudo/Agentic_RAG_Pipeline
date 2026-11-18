@@ -9,21 +9,7 @@ The agent has **planning, retrieval, and self-correction capabilities** — it d
 
 A user question enters a fixed order. Internal evidence outranks the open web, and the open web outranks parametric memory.
 
-<div style="transform: scale(2); transform-origin: top left; overflow-x: auto;">
-
 ```mermaid
-%%{init: {
-  'theme': 'base',
-  'themeVariables': {
-    'fontSize': '20px',
-    'fontFamily': 'trebuchet ms, Verdana, Arial, sans-serif'
-  },
-  'flowchart': {
-    'nodeSpacing': 130,
-    'rankSpacing': 130,
-    'curve': 'basis'
-  }
-}}%%
 flowchart LR
     Q["User query"] --> R1["1. Internal<br>organizational<br>context"]
     R1 --> R2["2. Live external<br>knowledge"]
@@ -33,7 +19,6 @@ flowchart LR
     R3 --> P
     P --> LLM["Local Ollama<br>LLM endpoint<br>(llama3.1:latest)"]
 ```
-
 1. **Internal organizational context — What the organization knows.** ChromaDB is searched for the nearest document chunks. Those passages ground the model in factual enterprise text, and each passage keeps the source file name and chunk index.
 2. **Live External Knowledge — What the outside world knows now.** If the retrieved context is missing, incomplete, or the question needs live knowledge, the inference endpoint is instructed to use web search or other external sources only after approval.   
 [Web Search: Why "Only with Approval" Is Critical ->](https://xiaoyanpan.com/Web_Search_Only_With_Approval.html)
@@ -43,22 +28,8 @@ flowchart LR
  ## How the agent is Instructed & Governed  
  What the agent is authorized to do, what evidence it can rely on, and when it must stop.
 
-<div style="transform: scale(2); transform-origin: top left; overflow-x: auto;">
-
 ```mermaid
-%%{init: {
-  'theme': 'base',
-  'themeVariables': {
-    'fontSize': '20px',
-    'fontFamily': 'trebuchet ms, Verdana, Arial, sans-serif'
-  },
-  'flowchart': {
-    'nodeSpacing': 130,
-    'rankSpacing': 130,
-    'curve': 'basis'
-  }
-}}%%
-flowchart LR
+flowchart TD
     %% Define Styles
     classDef anchor fill:#EDF2F7,stroke:#64748B,stroke-width:1.4px,color:#0F172A;
     classDef process fill:#E8F4FD,stroke:#BAE6FD,stroke-width:1.2px,color:#0C4A6E;
@@ -109,8 +80,6 @@ flowchart LR
     class T warning;
     class H anchor;
 ```
-
-</div>
 
 When retrieved evidence cannot support a conclusion, the run records that. `SimpleRAGAgent.self_correct()` scores lexical overlap between the generated answer and the retrieved passages and sets `supported` and `needs_rephrase`. A thin overlap means the agent leaned on fallback knowledge or needs a rephrased query rather than inventing a citation.
 
