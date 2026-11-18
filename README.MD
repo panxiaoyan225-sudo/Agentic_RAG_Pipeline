@@ -83,6 +83,7 @@ flowchart TD
     class H anchor;
 ```
 
+
 When retrieved evidence cannot support a conclusion, the run records that. `SimpleRAGAgent.self_correct()` scores lexical overlap between the generated answer and the retrieved passages and sets `supported` and `needs_rephrase`. A thin overlap means the agent leaned on fallback knowledge or needs a rephrased query rather than inventing a citation.
 
 ## Two strategies, and the hybrid that uses both
