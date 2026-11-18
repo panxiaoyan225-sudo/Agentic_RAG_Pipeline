@@ -29,13 +29,14 @@ flowchart LR
  What the agent is authorized to do, what evidence it can rely on, and when it must stop.
 
 ```mermaid
-classDef anchor fill:#EDF2F7,stroke:#64748B,stroke-width:1.4px,color:#0F172A;
-classDef process fill:#E8F4FD,stroke:#BAE6FD,stroke-width:1.2px,color:#0C4A6E;
-classDef decision fill:#F5FAFF,stroke:#93C5FD,stroke-width:1.2px,stroke-dasharray: 4 3,color:#0C4A6E;
-classDef success fill:#E6F4EA,stroke:#4D8B6F,stroke-width:1.35px,color:#14532D;
-classDef warning fill:#FDF3E7,stroke:#C98A5B,stroke-width:1.35px,color:#7C2D12;
-
 flowchart LR
+    %% Define Styles
+    classDef anchor fill:#EDF2F7,stroke:#64748B,stroke-width:1.4px,color:#0F172A;
+    classDef process fill:#E8F4FD,stroke:#BAE6FD,stroke-width:1.2px,color:#0C4A6E;
+    classDef decision fill:#F5FAFF,stroke:#93C5FD,stroke-width:1.2px,stroke-dasharray: 4 3,color:#0C4A6E;
+    classDef success fill:#E6F4EA,stroke:#4D8B6F,stroke-width:1.35px,color:#14532D;
+    classDef warning fill:#FDF3E7,stroke:#C98A5B,stroke-width:1.35px,color:#7C2D12;
+
     %% Column 1: Entry & Internal Retrieval
     A["User Question"] --> B["Agent Planning"]
     B --> C["Internal Knowledge Retrieval"]
@@ -67,8 +68,11 @@ flowchart LR
     P -- "No" --> R{"Refine Query?"}
     R -- "Yes" --> S["Retry Retrieval"]
     R -- "No" --> T["Stop & Escalate"]
+    
+    %% Retry Loop Back
     S --> C
 
+    %% Apply Classes
     class A anchor;
     class B,C,D,F,I,K,J,M,N,O,S process;
     class E,G,L,P,R decision;
