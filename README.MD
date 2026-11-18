@@ -12,6 +12,18 @@ A user question enters a fixed order. Internal evidence outranks the open web, a
 <div style="transform: scale(2); transform-origin: top left; overflow-x: auto;">
 
 ```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'fontSize': '20px',
+    'fontFamily': 'trebuchet ms, Verdana, Arial, sans-serif'
+  },
+  'flowchart': {
+    'nodeSpacing': 130,
+    'rankSpacing': 130,
+    'curve': 'basis'
+  }
+}}%%
 flowchart LR
     Q["User query"] --> R1["1. Internal<br>organizational<br>context"]
     R1 --> R2["2. Live external<br>knowledge"]
@@ -22,7 +34,6 @@ flowchart LR
     P --> LLM["Local Ollama<br>LLM endpoint<br>(llama3.1:latest)"]
 ```
 
-</div>
 1. **Internal organizational context — What the organization knows.** ChromaDB is searched for the nearest document chunks. Those passages ground the model in factual enterprise text, and each passage keeps the source file name and chunk index.
 2. **Live External Knowledge — What the outside world knows now.** If the retrieved context is missing, incomplete, or the question needs live knowledge, the inference endpoint is instructed to use web search or other external sources only after approval.   
 [Web Search: Why "Only with Approval" Is Critical ->](https://xiaoyanpan.com/Web_Search_Only_With_Approval.html)
@@ -35,6 +46,18 @@ flowchart LR
 <div style="transform: scale(2); transform-origin: top left; overflow-x: auto;">
 
 ```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'fontSize': '20px',
+    'fontFamily': 'trebuchet ms, Verdana, Arial, sans-serif'
+  },
+  'flowchart': {
+    'nodeSpacing': 130,
+    'rankSpacing': 130,
+    'curve': 'basis'
+  }
+}}%%
 flowchart LR
     %% Define Styles
     classDef anchor fill:#EDF2F7,stroke:#64748B,stroke-width:1.4px,color:#0F172A;
