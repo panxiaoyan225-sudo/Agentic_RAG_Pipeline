@@ -1,8 +1,8 @@
-# Governed Agentic RAG: From Organizational Knowledge to Evidence-Grounded Answers
+## Governed Agentic RAG: From Organizational Knowledge to Evidence-Grounded Answers
 
 An end-to-end local demonstration of **agentic retrieval-augmented generation (RAG)**. The pipeline combines retrieval planning, prioritized knowledge sources, iterative query refinement, local inference, and an evidence-grounding check.
 
-This project explores a central design question:
+The central design question:
 
 > How can an AI agent retrieve and use organizational knowledge while remaining within defined evidence and access boundaries?
 
@@ -55,7 +55,7 @@ The governing idea is that an agent may determine how to perform retrieval withi
 
 Default inference model: `llama3.1:latest`.
 
-The repository is a demonstration implementation. The deployed approach described by the author separates indexing and retrieval stages and uses incremental ingestion.
+***The repository is a demonstration implementation. The deployed approach separates indexing and retrieval stages and uses incremental ingestion.***
 
 ## Evidence evaluation: what the score means
 
@@ -110,4 +110,7 @@ Create a local `.env` file beside the pipeline script. The file is excluded from
 
 This repository focuses on **how an AI system retrieves and evaluates knowledge**. The related [AI-DataSuite](https://github.com/panxiaoyan225-sudo/AI-DataSuite) explores the wider human–AI operating model: agent responsibilities, orchestration, supervision, and accountability.
 
-**Technology enables retrieval. Organizational context establishes relevance. Evidence constrains the answer. Humans remain responsible for how knowledge is used.**
+**Technology enables retrieval.**   
+**Organizational context establishes relevance.**   
+**Evidence constrains the answer.**  
+**Humans remain responsible for how knowledge is used.**
