@@ -1,4 +1,4 @@
-## Governed Agentic RAG: From Organizational Knowledge to Evidence-Grounded Answers
+##  From Organizational Knowledge to Evidence-Grounded Answers
 
 An end-to-end local demonstration of **agentic retrieval-augmented generation (RAG)**. The pipeline combines retrieval planning, prioritized knowledge sources, iterative query refinement, local inference, and an evidence-grounding check.
 
