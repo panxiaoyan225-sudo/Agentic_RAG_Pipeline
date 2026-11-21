@@ -1,111 +1,113 @@
-## Full End-to-End Agentic RAG Pipeline  
+# Governed Agentic RAG: From Organizational Knowledge to Evidence-Grounded Answers
 
-This is a **demonstration version** that showcases the complete agentic RAG workflow: The `RAG_pipeline_local_Model.py` executes the **full end-to-end workflow**: ingest, embed, retrieve, assemble a context-enriched prompt, and send it directly to a local **Ollama** inference endpoint (`llama3.1:latest` by default) to generate the final answer.    
+An end-to-end local demonstration of **agentic retrieval-augmented generation (RAG)**. The pipeline combines retrieval planning, prioritized knowledge sources, iterative query refinement, local inference, and an evidence-grounding check.
 
-My real-world deployed version uses **separate index and retrieval stages** with **incremental ingestion**.   
-Alternative approach: For rapid development or proof-of-concept, consider **Langchain-RAG**.
+This project explores a central design question:
 
-The agent has **planning, retrieval, and self-correction capabilities** — it decides how to query, deduplicates results, and scores whether the answer is grounded in the retrieved evidence. It implements a **priority cascade**: internal organizational context first, then live external knowledge with approval, then parametric fallback. It's not a single-shot retrieve-and-generate — the agent iterates over sub-queries and validates the answer against the source.  
+> How can an AI agent retrieve and use organizational knowledge while remaining within defined evidence and access boundaries?
 
-## Priority cascade
+It is part of a broader direction: building intelligence systems in which data and knowledge are not simply available to an AI model, but are selected, evaluated, and used under explicit operating rules.
 
-A user question enters a fixed order. Internal evidence outranks the open web, and the open web outranks parametric memory.
+[**Governed Knowledge Architecture**](https://xiaoyanpan.com/#enterprise-ai-deployment) · [**Why external search requires approval**](https://xiaoyanpan.com/Web_Search_Only_With_Approval.html)
+
+## What this implementation demonstrates
+
+- **Retrieval planning:** the agent can work through sub-queries rather than relying on one retrieval pass.
+- **Prioritized knowledge sources:** internal organizational context is considered first, live external knowledge is subject to approval, and model parametric knowledge is treated as a fallback.
+- **Local retrieval and inference:** document embeddings are stored in ChromaDB and generation is performed through a local Ollama endpoint.
+- **Evidence checking:** retrieved passages are compared with the generated answer to identify weak textual support and possible need for query refinement.
+- **Source traceability:** retrieved passages retain source-file and chunk metadata for inspection.
+
+## Knowledge-source priority
 
 ```mermaid
 flowchart LR
-    Q["User query"] --> R1["1. Internal<br>organizational<br>context"]
-    R1 --> R2["2. Live external<br>knowledge"]
-    R2 --> R3["3. Pre-trained<br>parametric<br>knowledge"]
-    R1 --> P["Context<br>enriched<br>prompt"]
-    R2 --> P
-    R3 --> P
-    P --> LLM["Local Ollama<br>LLM endpoint<br>(llama3.1:latest)"]
+    Q["User question"] --> I["1. Internal organizational context"]
+    I --> E["2. Live external knowledge<br/>(when approved)"]
+    E --> P["3. Model parametric knowledge<br/>(fallback)"]
+    I --> C["Context assembled for generation"]
+    E --> C
+    P --> C
+    C --> L["Local Ollama inference"]
+    L --> V["Evidence-grounding check"]
+    V --> A["Answer and support status"]
 ```
-1. **Internal organizational context — What the organization knows.** ChromaDB is searched for the nearest document chunks. Those passages ground the model in factual enterprise text, and each passage keeps the source file name and chunk index.
-2. **Live External Knowledge — What the outside world knows now.** If the retrieved context is missing, incomplete, or the question needs live knowledge, the inference endpoint is instructed to use web search or other external sources only after approval.   
-[Web Search: Why "Only with Approval" Is Critical ->](https://xiaoyanpan.com/Web_Search_Only_With_Approval.html)
-3. **Pre-trained parametric knowledge — What the model generally knows.** General reasoning fills gaps that neither the index nor a live search covers.
 
+The priority order distinguishes **organizational evidence**, **current external information**, and **general knowledge encoded in the model**. These sources are not interchangeable: parametric knowledge may support general reasoning, but it is not a verified source for current organizational facts.
 
- ## How the agent is Instructed & Governed  
- What the agent is authorized to do, what evidence it can rely on, and when it must stop.
+## Architecture and agent governance
 
-<img src="docs/RAG_diagram.png" style="max-width:100%; height:auto;" alt="Architecture Diagram">
+The architecture diagram shows how the agent is instructed, how retrieval is organized, and how evidence is assessed.
 
+<img src="docs/RAG_diagram.png" alt="Agentic RAG architecture and governance diagram" style="max-width:100%;height:auto;">
 
-When retrieved evidence cannot support a conclusion, the run records that. `SimpleRAGAgent.self_correct()` scores lexical overlap between the generated answer and the retrieved passages and sets `supported` and `needs_rephrase`. A thin overlap means the agent leaned on fallback knowledge or needs a rephrased query rather than inventing a citation.
+The governing idea is that an agent may determine how to perform retrieval within its mandate; it does not independently redefine which sources it is authorized to use.
 
-## Two strategies, and the hybrid that uses both
+## End-to-end demonstration
 
-| | Strategy 1 — Retrieval-augmented generation | Strategy 2 — Enterprise fine-tuning |
+`RAG_pipeline_local_Model.py` demonstrates the complete local workflow:
+
+1. **Ingest** supported documents from the configured reports directory.
+2. **Chunk** documents into overlapping text windows.
+3. **Embed and store** chunks in a persistent ChromaDB collection.
+4. **Retrieve** relevant passages for a user question.
+5. **Generate and evaluate** an answer using a local Ollama model and a text-overlap support check.
+
+Default inference model: `llama3.1:latest`.
+
+The repository is a demonstration implementation. The deployed approach described by the author separates indexing and retrieval stages and uses incremental ingestion.
+
+## Evidence evaluation: what the score means
+
+`SimpleRAGAgent.self_correct()` compares lexical overlap between the generated answer and retrieved passages. It records support-related flags such as `supported` and `needs_rephrase`.
+
+This is a **heuristic text-overlap check**, not a calibrated probability, a factuality guarantee, or proof that a statement is correct. A low overlap can indicate that the retrieved context does not adequately support the answer or that the query needs refinement.
+
+## Retrieval strategy and model adaptation
+
+| Approach | What changes | Appropriate use |
 |---|---|---|
-| What it changes | The evidence in the prompt | The model's weights, tone, and terminology |
-| What it is good at | Factual accuracy, fresh knowledge, source traceability | Behavior, persona, and house style |
-| Strengths | Updates by dropping in new files. Access stays on the local index. Every passage names its source. | Deep customization. Low latency once the weights are static. |
-| Limits | The answer is only as good as retrieval. The prompt has a context window. | Can still hallucinate. Training and every retrain are expensive. |
+| Retrieval-augmented generation | Evidence supplied in the prompt | Bringing document-specific and changing information into a response |
+| Fine-tuning | Model weights and learned behaviour | Adapting style, terminology, or task behaviour |
 
-**The enterprise ideal is the hybrid.** Use RAG to pull up-to-date facts from documents. Use light fine-tuning only for tone, structure, and branding. This repository implements the RAG side: documents are chunked and embedded into ChromaDB without a training run. Adapting model weights is a separate job and is not part of the pipeline script.
+This repository implements the RAG approach. Fine-tuning is discussed as a complementary option, but model-weight adaptation is not implemented in this pipeline.
 
-## Why Internal Context Comes First
+## Implementation details
 
-Organizations keep a local knowledge base because the facts change faster than a training cycle.
-
-**Dynamic data, instant sync.** When a policy, price, or SOP changes, the updated file is dropped into the reports directory and the pipeline is run again. New chunks are added to ChromaDB in the same run. No GPU retraining is required for a knowledge update.
-
-**Grounded answers with a source.** Retrieved passages are attached to the prompt as `[Source: filename]` blocks. The index stores the source file, chunk index, and extension with every vector, so an answer can be traced to the document it came from.
-
-**Local-first knowledge base and inference.** PDFs, HTML, Word files, text, and Markdown land in one on-disk Chroma collection. Privacy follows the whole path: files stay in the reports directory you configure, vectors stay in the index directory you configure, and inference runs locally via Ollama (`http://localhost:11434`).
-
-## How a run works
-
-Running the script loads settings from `.env`, then walks five steps:
-
-1. **Ingest.** `ingest_documents()` walks `RAG_REPORTS_DIR`, skips excluded directories and extensions, and reads HTML, PDF, DOCX, TXT, and Markdown.
-2. **Chunk.** Each document is split into windows of `RAG_CHUNK_SIZE` characters with `RAG_CHUNK_OVERLAP` characters of overlap. A chunk id is `{stem}_chunk_{index}_{filename}`.
-3. **Embed and store.** `embed_and_store()` loads `all-MiniLM-L6-v2`, encodes chunks in batches of 32, and `add`s them to the persistent Chroma collection. Existing ids are left in place.
-4. **Retrieve.** The same embedding model encodes the question. Chroma returns the nearest `RAG_TOP_K` chunks with document text, metadata, and distance.
-5. **Generate & Evaluate.** `SimpleRAGAgent` deduplicates the chunks, builds the system-and-user prompt following the 3-step priority cascade, sends it to the local Ollama model (`call_ollama()`), and scores answer-to-context overlap via `self_correct()`.
-
-The interactive loop prints the plan, how many chunks came back, the overlap confidence, and the final **LLM Answer** generated by `llama3.1:latest`. Type `exit` to stop.
-
-## Ingestion rules
-
-| Rule | What the pipeline does |
+| Area | Current implementation |
 |---|---|
-| Skip rules | A path is skipped when any directory component is `.venv`, `.git`, `__pycache__`, `node_modules`, `.DS_Store`, or `.vs`. Shortcut files (`.lnk`, `.url`), bytecode (`.pyc`, `.pyo`, `.pyd`), binaries, images, and archives are skipped by extension. Matching is case-insensitive. |
-| Multi-format ingestion | HTML, PDF, DOCX, TXT, and Markdown are read. HTML is stripped of script, style, and tags. PDF uses PyMuPDF. DOCX uses `python-docx` paragraph text. Markdown heading and emphasis markers are removed. **CSV is excluded** and is not in the allowed extension list. |
-| Incremental updates | The Chroma collection is opened with `get_or_create_collection` on the existing on-disk index. `collection.add` inserts new chunk ids and does not delete what is already stored. A later run keeps existing chunks and adds chunks whose ids are not in the collection yet. |
-| Embedding model | `all-MiniLM-L6-v2` through Sentence Transformers. It is an open-source model. Queries and documents are embedded with the same model so they occupy one vector space. Override the name with `RAG_EMBEDDING_MODEL` if you change it in both indexing and query. |
-| DuplicateIDError handling | Built into `embed_and_store()`. If a batch `add` raises Chroma's `DuplicateIDError` (or an error whose message says the ids are duplicates), that batch is not discarded wholesale. The function reads the ids already in the collection, drops the ones that collide, and `add`s only the new ids. If every id in the batch already exists, the batch is skipped and the run continues. |
+| Document formats | HTML, PDF, DOCX, TXT, Markdown |
+| Embeddings | Sentence Transformers, default `all-MiniLM-L6-v2` |
+| Vector store | Persistent ChromaDB |
+| Local inference | Ollama, default `llama3.1:latest` |
+| Retrieval | Similarity search with configurable top-k |
+| Configuration | `.env` settings for paths and runtime parameters |
 
-Chunk ids are derived from the file name and the chunk index. Re-running on an unchanged file is a no-op for those ids. If you edit a file but the chunk count and file name stay the same, the old vectors remain, because a duplicate id is skipped rather than overwritten. A renamed file or a newly added file produces new ids and is appended.
+CSV files are not included in the current document-ingestion allowlist.
+
+### Incremental-ingestion behaviour and limitation
+
+Chunk IDs are derived from the filename and chunk index. Existing IDs are retained when the collection is reopened, and new IDs are added. The current `collection.add` approach does **not** replace an existing vector when a source file is edited but produces the same chunk IDs. A changed file may therefore require an explicit re-indexing or collection-refresh strategy to prevent stale chunks.
 
 ## Configuration
 
-Paths and runtime settings live in `.env` next to the pipeline script. The Python file reads that file at startup and does not contain machine-specific directories. A variable already set in the process environment is left as-is.
+Create a local `.env` file beside the pipeline script. The file is excluded from version control.
 
-| Variable | Required | Role |
-|---|---|---|
-| `RAG_REPORTS_DIR` | yes | Root folder walked for documents |
-| `RAG_INDEX_DIR` | yes | Persistent ChromaDB directory |
-| `RAG_CHUNKS_DIR` | yes | Directory created for chunk output |
-| `RAG_EMBEDDING_MODEL` | no | Defaults to `all-MiniLM-L6-v2` |
-| `RAG_COLLECTION_NAME` | no | Defaults to `rag_documents` |
-| `RAG_CHUNK_SIZE` | no | Character window, default `500` |
-| `RAG_CHUNK_OVERLAP` | no | Overlap between windows, default `100` |
-| `RAG_TOP_K` | no | Passages retrieved per question, default `5` |
-| `OLLAMA_MODEL` | no | Primary local Ollama model, defaults to `llama3.1:latest` |
-| `OLLAMA_FALLBACK_MODEL` | no | Fallback Ollama model if primary fails/times out, defaults to `llama3.1:latest` |
-| `OLLAMA_URL` | no | Local Ollama API endpoint, defaults to `http://localhost:11434` |
+| Variable | Purpose |
+|---|---|
+| `RAG_REPORTS_DIR` | Root directory containing source documents |
+| `RAG_INDEX_DIR` | Persistent ChromaDB directory |
+| `RAG_CHUNKS_DIR` | Chunk-output directory |
+| `RAG_EMBEDDING_MODEL` | Embedding model; defaults to `all-MiniLM-L6-v2` |
+| `RAG_COLLECTION_NAME` | ChromaDB collection name |
+| `RAG_CHUNK_SIZE` / `RAG_CHUNK_OVERLAP` | Chunking configuration |
+| `RAG_TOP_K` | Number of retrieved passages |
+| `OLLAMA_MODEL` | Primary local inference model |
+| `OLLAMA_FALLBACK_MODEL` | Fallback local model |
+| `OLLAMA_URL` | Ollama endpoint; defaults to `http://localhost:11434` |
 
-`.env` is listed in `.gitignore`. Keep the filled-in file on this machine.
+## Position within the broader work
 
-If a required variable is missing, the process exits before it touches the index.
+This repository focuses on **how an AI system retrieves and evaluates knowledge**. The related [AI-DataSuite](https://github.com/panxiaoyan225-sudo/AI-DataSuite) explores the wider human–AI operating model: agent responsibilities, orchestration, supervision, and accountability.
 
-<div align="right">
-  <blockquote>
-    <p><strong>Technology enables retrieval.</strong></p>
-    <p><strong>Organization provides context.</strong></p>
-    <p><strong>Human determines how that knowledge should be used.</strong></p>
-  </blockquote>
-</div>
+**Technology enables retrieval. Organizational context establishes relevance. Evidence constrains the answer. Humans remain responsible for how knowledge is used.**
