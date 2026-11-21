@@ -6,9 +6,9 @@ The central design question:
 
 > How can an AI agent retrieve and use organizational knowledge while remaining within defined evidence and access boundaries?
 
-It is part of a broader direction: building intelligence systems in which data and knowledge are not simply available to an AI model, but are selected, evaluated, and used under explicit operating rules.
+It is part of a broader direction: **building intelligence systems in which data and knowledge are not simply available to an AI model, but are selected, evaluated, and used under explicit operating rules**.
 
-[**Governed Knowledge Architecture**](https://xiaoyanpan.com/#enterprise-ai-deployment) · [**Why external search requires approval**](https://xiaoyanpan.com/Web_Search_Only_With_Approval.html)
+[**Governed Knowledge Architecture**](https://xiaoyanpan.com/#enterprise-ai-deployment)  ·  [**Why external search requires approval**](https://xiaoyanpan.com/Web_Search_Only_With_Approval.html)
 
 ## What this implementation demonstrates
 
@@ -35,7 +35,7 @@ flowchart LR
 
 The priority order distinguishes **organizational evidence**, **current external information**, and **general knowledge encoded in the model**. These sources are not interchangeable: parametric knowledge may support general reasoning, but it is not a verified source for current organizational facts.
 
-## Architecture and agent governance
+## Architecture and agent governance 
 
 The architecture diagram shows how the agent is instructed, how retrieval is organized, and how evidence is assessed.
 
@@ -55,7 +55,7 @@ The governing idea is that an agent may determine how to perform retrieval withi
 
 Default inference model: `llama3.1:latest`.
 
-***The repository is a demonstration implementation. The deployed approach separates indexing and retrieval stages and uses incremental ingestion.***
+***The repository is a demonstration implementation. The deployed pipeline separates indexing and retrieval stages and uses incremental ingestion.***
 
 ## Evidence evaluation: what the score means
 
