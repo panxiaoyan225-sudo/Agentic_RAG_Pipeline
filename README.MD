@@ -45,7 +45,7 @@ The governing idea is that an agent may determine how to perform retrieval withi
 
 ## End-to-end demonstration
 
-`RRAG_pipeline_demo.py` demonstrates the complete local workflow:
+`RAG_pipeline_demo.py` demonstrates the complete local workflow:
 
 1. **Ingest** supported documents from the configured reports directory.
 2. **Chunk** documents into overlapping text windows.
