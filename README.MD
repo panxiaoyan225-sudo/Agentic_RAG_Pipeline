@@ -45,7 +45,7 @@ The governing idea is that an agent may determine how to perform retrieval withi
 
 ## End-to-end demonstration
 
-`RAG_pipeline_local_Model.py` demonstrates the complete local workflow:
+`RRAG_pipeline_demo.py` demonstrates the complete local workflow:
 
 1. **Ingest** supported documents from the configured reports directory.
 2. **Chunk** documents into overlapping text windows.
@@ -55,7 +55,7 @@ The governing idea is that an agent may determine how to perform retrieval withi
 
 Default inference model: `llama3.1:latest`.
 
-***The repository is a demonstration implementation. The deployed pipeline separates indexing and retrieval stages and uses incremental ingestion.***
+***The repository is a demonstration implementation. The real deployed pipeline separates indexing and retrieval stages and uses incremental ingestion.***
 
 ## Evidence evaluation: what the score means
 
