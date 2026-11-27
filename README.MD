@@ -2,7 +2,7 @@
 
 An end-to-end local demonstration of **agentic retrieval-augmented generation (RAG)**. The pipeline combines retrieval planning, prioritized knowledge sources, iterative query refinement, local inference, and an evidence-grounding check.
 
-The central design question:
+The central design question:  
 
 > How can an AI agent retrieve and use organizational knowledge while remaining within defined evidence and access boundaries?
 
@@ -53,7 +53,7 @@ The governing idea is that an agent may determine how to perform retrieval withi
 4. **Retrieve** relevant passages for a user question.
 5. **Generate and evaluate** an answer using a local Ollama model and a text-overlap support check.
 
-Default inference model: `llama3.1:latest`.
+Default inference model: `llama3.1:latest`
 
 ***The repository is a demonstration implementation. The real deployed pipeline separates indexing and retrieval stages and uses incremental ingestion.***
 
