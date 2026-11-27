@@ -115,17 +115,4 @@ This repository focuses on **how an AI system retrieves and evaluates knowledge*
 **Evidence constrains the answer.**  
 **Humans remain responsible for how knowledge is used.**
 
-<script type="module">
-  import mermaid from '[https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs](https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs)';
-  mermaid.initialize({ startOnLoad: false, theme: 'default' });
-  document.addEventListener('DOMContentLoaded', async () => {
-    const blocks = document.querySelectorAll('pre code.language-mermaid');
-    blocks.forEach((code) => {
-      const div = document.createElement('div');
-      div.className = 'mermaid';
-      div.textContent = code.textContent;
-      code.parentElement.replaceWith(div);
-    });
-    await mermaid.run({ querySelector: '.mermaid' });
-  });
-</script>
+
